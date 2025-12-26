@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Remote</title>
+</head>
+<body>
+    <div id="nameSelectContainer">
+        <input max="20" id="name" type="text" placeholder="Your Name"/>
+        <button class="btn btn-submit" onclick="submitName()"> Submit Name</button>
+    </div>
+
+    <div id="votingContainer">-
+        <button class="btn btn-good" onclick="send(1)">GOOD</button>
+        <button class="btn btn-bad" onclick="send(0)">BAD</button>
+        <button class="btn question" onclick="send(255)">?</button>
+        <button class="btn btn-bang" onclick="send(254)">!</button>
+    </div>
+</body>
+
+<script>
+    const sessionId = window.location.pathname.split('/').pop();
+    let ws = null;
+    let name = null;
+
+    function send(val) {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(val);
+        }
+    }
+
+    function submitName() {
+        name = document.getElementById("name").value;
+        document.getElementById("nameSelectContainer").style.display = "None";
+        document.getElementById("votingContainer").style.display = "flex";
+
+        ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}/${Date.now()}/${name}`);
+    }
+</script>
+
+<style>
+    body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        margin: 0;
+    }
+
+    button {
+        flex: 1;
+        font-size: 3rem;
+        border: none;
+        color: white;
+        transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        background-color: blue
+    }
+
+    #votingContainer {
+        display: none;
+    }
+
+    .btn-good {
+        background-color: #28a745;
+    }
+
+    .btn-bad {
+        background-color: #dc3545;
+    }
+
+    button:active {
+        opacity: 0.7;
+    }
+</style>
+
+</html>

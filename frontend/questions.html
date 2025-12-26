@@ -1,0 +1,86 @@
+<h1> How was your day so far? </h1>
+
+<div class="answers">
+
+</div>
+
+<template id="answer-template">
+    <div class="folder-card">
+        <div class="name-label">Name</div>
+        <div class="value-text">Value</div>
+    </div>
+</template>
+
+
+<script>
+    const existingUsers = {};
+    const sessionId = window.location.pathname.split('/').pop();
+    const ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
+    const answerTemplate = document.querySelector("#answer-template");
+
+    ws.addEventListener("message", (message) => {
+        console.log(existingUsers)
+        const parsedMessage = JSON.parse(message.data)
+        let answer = null;
+        if (parsedMessage.userId in existingUsers) {
+            answer = existingUsers[parsedMessage.userId]
+        } else {
+            const fragment = answerTemplate.content.cloneNode(true);
+            fragment.querySelector(".name-label").innerText = parsedMessage.name;
+            fragment.querySelector(".folder-card").setAttribute('id', parsedMessage.userId)
+            answer = fragment.firstElementChild;
+
+            document.querySelector(".answers").appendChild(answer);
+            existingUsers[parsedMessage.userId] = answer;
+        }
+
+        answer.querySelector(".value-text").innerText = parsedMessage.message;
+
+    });
+</script>
+
+<style>
+    .folder-card {
+        position: relative;
+        width: 300px;
+        height: 150px;
+        background-color: #27ae60;
+
+        border: 2px solid black;
+        border-radius: 0 40px 15px 15px;
+        box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.15);
+
+        padding: 15px;
+        font-family: sans-serif;
+        margin-top: 50px;
+    }
+
+    .folder-card::before {
+        content: "";
+        position: absolute;
+        top: -30px;
+        left: -2px;
+        width: 150px;
+        height: 30px;
+        background-color: #27ae60;
+        border: 2px solid black;
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .name-label {
+        position: absolute;
+        top: -20px;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .value-text {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+</style>

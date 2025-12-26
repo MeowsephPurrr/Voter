@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Generator</title>
+
+    <script src="qrcode.min.js"></script>
+
+    <script src="/static/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+        }
+
+        #qrcode {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1 id="question"></h1>
+<div id="qrcode"></div>
+
+<a id="questionsBtn" href=""> Go To Questions </a>
+</body>
+
+<script>
+    const createQRCode = async () => {
+        async function getUrl() {
+            const res = await fetch("api/data");
+            const json = await res.json();
+
+            return json.url
+        }
+
+        const url = await getUrl();
+        const sessionId = Math.random().toString(36).substring(7);
+
+        const mobileUrl = `${url}/mobile/${sessionId}`;
+
+        document.getElementById("questionsBtn").href = `${url}/questions/${sessionId}`;
+        new QRCode(document.getElementById("qrcode"), mobileUrl);
+    }
+
+    createQRCode();
+
+</script>
+</html>
