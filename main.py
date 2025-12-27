@@ -1,3 +1,5 @@
+from logging import raiseExceptions
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -56,13 +58,19 @@ async def websocket_handler(websocket: WebSocket, session_id: str, id: str = Non
     user = await manager.connect(websocket, session_id, id, name)
     try:
         if user:
+            await manager.send_to_main(user, "", manager.TYPES.CONNECTION)
             while True:
                 message = await websocket.receive_text()
                 await manager.send_to_main(user, message)
         else:
+            await websocket.send_json({
+                "type": manager.TYPES.USER.value,
+                "data": [user.as_dict() for user in manager.active_connections[session_id]],
+            })
+
             while True:
                 data = await websocket.receive_text()
-                #await manager.broadcast(session_id, data)
+                await manager.broadcast(session_id, data)
     except WebSocketDisconnect:
         manager.disconnect(websocket, session_id)
 

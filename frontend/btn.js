@@ -60,7 +60,7 @@ const btnConf = [
         value: "?",
         color: "yellow",
         img: "question.png",
-        trivia: ["Is it a red laser dot? Nobody knows.", "Pure 'mew-stery'?"],
+        trivia: ["Is it a red laser dot? Nobody knows.", "Pure 'meow-stery'?"],
         group: 2
     },
     {

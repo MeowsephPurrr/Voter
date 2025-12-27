@@ -18,7 +18,7 @@
             autocomplete="off"
             spellcheck="false"
     />
-    <button class="btn btn-submit" onclick="submitName()"> Submit Name </button>
+    <button class="btn btn-submit" onclick="submitName()"> Submit Name</button>
 </div>
 
 <div id="votingContainer">
@@ -33,7 +33,9 @@
     function send(val) {
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(val);
+            return;
         }
+        alert("NO OPEN WEBSOCKET");
     }
 
     function submitName() {

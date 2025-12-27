@@ -6,57 +6,109 @@
 
 <body>
 
-    <h1> How was your day so far? </h1>
+<h1 style="text-align: center; position: absolute"> Lets vote </h1>
 
-    <div class="answers">
-    </div>
+<div class="connected-user-container">
+    <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
+</div>
 
-    <template id="answer-template">
-        <div class="card-container">
-            <div class="card-label user-name"></div>
-            <div class="card">
-                <div class="card-face card-back">
-                    <img src="/static/images/card-back.png">
-                </div>
+<div class="answers">
+</div>
 
-                <div class="card-face card-front">
-                    <div class="card-inner">
-                        <header class="card-header">
-                            <h1 class="user-name"></h1>
-                        </header>
+<template id="answer-template">
+    <div class="card-container">
+        <div class="card-label user-name"></div>
+        <div class="card">
+            <div class="card-face card-back">
+                <img src="/static/images/card-back.png">
+            </div>
 
-                        <div class="card-image-container">
-                            <img class="card-image">
-                        </div>
+            <div class="card-face card-front">
+                <div class="card-inner">
+                    <header class="card-header">
+                        <h1 class="user-name"></h1>
+                    </header>
 
-                        <footer class="card-footer">
-                            <div class="trivia-icon"></div>
-                            <p class="trivia">
-                            </p>
-                        </footer>
+                    <div class="card-image-container">
+                        <img class="card-image">
                     </div>
+
+                    <footer class="card-footer">
+                        <div class="trivia-icon"></div>
+                        <p class="trivia">
+                        </p>
+                    </footer>
                 </div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
+<template id="user-template">
+    <span class="connected-user" data-id=""></span>
+</template>
 </body>
 <script>
     const existingUsers = {};
     const sessionId = window.location.pathname.split('/').pop();
     const ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
     const answerTemplate = document.querySelector("#answer-template");
+    const userTemplate = document.querySelector("#user-template");
+    const connectedUserContainer = document.querySelector(".connected-user-container");
 
     ws.addEventListener("message", (message) => {
         const parsedMessage = JSON.parse(message.data)
+        switch (parsedMessage.type) {
+            case "USER":
+                renderUser(parsedMessage.data)
+                break;
+            case "MESSAGE":
+                renderMessages(parsedMessage.data);
+                break;
+            case "CONNECTION":
+                addUser(parsedMessage.data)
+                break;
+        }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+        broadCastToWS(ws, 0);
+    } else {
+        ws.addEventListener("open", () => {
+            broadCastToWS(ws, 0);
+        });
+    }
+
+    function broadCastToWS(ws, val) {
+        ws.send(val);
+    }
+
+    function renderUser(users) {
+        users.forEach(user => {
+            addUser(user);
+        });
+    }
+
+    function addUser(user) {
+        const fragment = userTemplate.content.cloneNode(true);
+        const userNode = fragment.firstElementChild;
+        userNode.setAttribute("data-id", user.userId);
+        userNode.innerText = user.name;
+        connectedUserContainer.appendChild(userNode);
+        existingUsers[user.userId] = null;
+    }
+
+    function renderMessages(parsedMessage) {
         const selectedBtn = getBtn(parsedMessage.message);
         let answer = null;
-        if (parsedMessage.userId in existingUsers) {
+        if (existingUsers[parsedMessage.userId]) {
             answer = existingUsers[parsedMessage.userId]
         } else {
             const fragment = answerTemplate.content.cloneNode(true);
 
             answer = fragment.firstElementChild;
-            answer.querySelectorAll(".user-name").forEach(el => {el.innerText=parsedMessage.name})
+            answer.querySelectorAll(".user-name").forEach(el => {
+                el.innerText = parsedMessage.name
+            })
 
             document.querySelector(".answers").appendChild(answer);
             answer.addEventListener("click", function () {
@@ -66,10 +118,9 @@
             });
             existingUsers[parsedMessage.userId] = answer;
         }
-
         answer.querySelector(".card-image").src = `/static/images/${selectedBtn.img}`;
         answer.querySelector(".trivia").innerText = getTrivia(selectedBtn);
-    });
+    }
 </script>
 
 <style>
@@ -81,10 +132,36 @@
 
     body {
         background-color: black;
+        display: flex;
+        justify-content: center;
     }
 
     body > * {
         color: white;
+    }
+
+    .connected-user-container {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        display: flex;
+        flex-direction: column;
+        background-color: #8888883b;
+        padding: 10px;
+    }
+
+    .connected-user {
+        padding: 5px;
+    }
+
+    .answers {
+        display: flex;
+        justify-content: center;
+        row-gap: 40px;
+        column-gap: 20px;
+        flex-wrap: wrap;
+        width: 80%;
+        margin-top: 100px;
     }
 
     .card-container {
