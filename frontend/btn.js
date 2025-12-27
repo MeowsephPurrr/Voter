@@ -4,7 +4,7 @@ const btnConf = [
         value: "1",
         color: "blue",
         img: "1.png",
-        trivia: ["A 'mew-tual' understanding.", "Easy as knocking a glass off a table."],
+        trivia: ["A 'meow-tual' understanding.", "Easy as knocking a glass off a table."],
         group: 1
     },
     {

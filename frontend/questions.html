@@ -18,6 +18,9 @@
     <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
 </div>
 
+<div class="average-vote hidden">
+</div>
+
 <div class="answers">
 </div>
 
@@ -60,8 +63,11 @@
     const answerTemplate = document.querySelector("#answer-template");
     const userTemplate = document.querySelector("#user-template");
     const connectedUserContainer = document.querySelector(".connected-user-container");
+    const averageVote = document.querySelector(".average-vote");
+    let cardsFlipped = false;
 
     ws.addEventListener("message", (message) => {
+        console.log(message.type)
         const parsedMessage = JSON.parse(message.data)
         switch (parsedMessage.type) {
             case "USER":
@@ -69,7 +75,7 @@
                 break;
             case "MESSAGE":
                 renderMessages(parsedMessage.data);
-                turnAllCards();
+                flipAllCards();
                 break;
             case "CONNECTION":
                 addUser(parsedMessage.data)
@@ -97,6 +103,8 @@
                     existingUsers[key] = null;
                     document.querySelector(`.connected-user[data-id="${key}"]`).classList.remove("voted");
                 }
+                averageVote.classList.add("hidden");
+                cardsFlipped = false;
             });
         }
     );
@@ -127,6 +135,8 @@
     }
 
     function renderMessages(parsedMessage) {
+        if (cardsFlipped) return;
+
         const selectedBtn = getBtn(parsedMessage.message);
         let answer = null;
         if (existingUsers[parsedMessage.userId]) {
@@ -135,9 +145,8 @@
             const fragment = answerTemplate.content.cloneNode(true);
 
             answer = fragment.firstElementChild;
-            answer.querySelectorAll(".user-name").forEach(el => {
-                el.innerText = parsedMessage.name
-            })
+            answer.querySelector(".user-name").innerText = parsedMessage.name;
+            answer.querySelector(".card").setAttribute("data-value", parsedMessage.message);
 
             answerContainer.appendChild(answer);
             answer.addEventListener("click", function () {
@@ -151,12 +160,20 @@
         answer.querySelector(".trivia").innerText = getTrivia(selectedBtn);
     }
 
-    function turnAllCards() {
+    function flipAllCards() {
         const allVoted = Object.values(existingUsers).every(Boolean);
         if (!allVoted) return;
 
-        setTimeout(() => document.querySelectorAll(".card").forEach(el => el.classList.toggle("is-flipped")), 100)
-
+        cardsFlipped = true;
+        let addedVotedValue = 0;
+        setTimeout(() => {
+            document.querySelectorAll(".card").forEach(el => {
+                el.classList.add("is-flipped");
+                addedVotedValue += parseInt(el.getAttribute("data-value"));
+            });
+            averageVote.innerText = addedVotedValue;
+            averageVote.classList.remove("hidden");
+        }, 100);
     }
 </script>
 
@@ -213,8 +230,35 @@
     .connected-user {
         padding: 5px;
     }
+
     .connected-user.voted {
         color: green;
+    }
+
+    .average-vote {
+        display: flex;
+        opacity: 1;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        width: 100px;
+        height: 100px;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+        background-color: red;
+        color: black;
+        border-radius: 50px;
+        transition: opacity 2s, display 2s;
+
+        @starting-style {
+            opacity: 0;
+        }
+    }
+
+    .hidden {
+        display: none !important;
+        opacity: 0;
     }
 
     .answers {
