@@ -1,6 +1,3 @@
-from dataclasses import asdict
-from typing import Any, Coroutine
-
 from fastapi import WebSocket
 
 from backend.user import User
