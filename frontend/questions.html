@@ -6,7 +6,13 @@
 
 <body>
 
-<h1 style="text-align: center; position: absolute"> Lets vote </h1>
+<div class="side-header">
+    <h1> Lets vote </h1>
+    <div>
+        <button class="btn page-change">Prev</button>
+        <button class="btn page-change">Next</button>
+    </div>
+</div>
 
 <div class="connected-user-container">
     <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
@@ -17,7 +23,6 @@
 
 <template id="answer-template">
     <div class="card-container">
-        <div class="card-label user-name"></div>
         <div class="card">
             <div class="card-face card-back">
                 <img src="/static/images/card-back.png">
@@ -51,6 +56,7 @@
     const existingUsers = {};
     const sessionId = window.location.pathname.split('/').pop();
     const ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
+    const answerContainer = document.querySelector(".answers");
     const answerTemplate = document.querySelector("#answer-template");
     const userTemplate = document.querySelector("#user-template");
     const connectedUserContainer = document.querySelector(".connected-user-container");
@@ -63,22 +69,39 @@
                 break;
             case "MESSAGE":
                 renderMessages(parsedMessage.data);
+                turnAllCards();
                 break;
             case "CONNECTION":
                 addUser(parsedMessage.data)
+                break;
+            case "DISCONNECT":
+                removeUser(parsedMessage.data)
                 break;
         }
     });
 
     if (ws.readyState === WebSocket.OPEN) {
-        broadCastToWS(ws, 0);
+        broadcast(ws, 0);
     } else {
         ws.addEventListener("open", () => {
-            broadCastToWS(ws, 0);
+            broadcast(ws, 0);
         });
     }
 
-    function broadCastToWS(ws, val) {
+    document.querySelectorAll(".page-change").forEach(
+        el => {
+            el.addEventListener("click", () => {
+                broadcast(ws, 1);
+                answerContainer.replaceChildren();
+                for (const key of Object.keys(existingUsers)) {
+                    existingUsers[key] = null;
+                    document.querySelector(`.connected-user[data-id="${key}"]`).classList.remove("voted");
+                }
+            });
+        }
+    );
+
+    function broadcast(ws, val) {
         ws.send(val);
     }
 
@@ -97,6 +120,12 @@
         existingUsers[user.userId] = null;
     }
 
+    function removeUser(user) {
+        existingUsers[user.userId].remove();
+        delete existingUsers[user.userId];
+        document.querySelector(`.connected-user[data-id="${user.userId}"]`).remove();
+    }
+
     function renderMessages(parsedMessage) {
         const selectedBtn = getBtn(parsedMessage.message);
         let answer = null;
@@ -110,16 +139,24 @@
                 el.innerText = parsedMessage.name
             })
 
-            document.querySelector(".answers").appendChild(answer);
+            answerContainer.appendChild(answer);
             answer.addEventListener("click", function () {
                 this.classList.toggle("is-flipped");
                 this.querySelector(".card").classList.toggle("is-flipped");
-                this.querySelector(".card-label").classList.toggle("card-flipped");
             });
             existingUsers[parsedMessage.userId] = answer;
+            document.querySelector(`.connected-user[data-id="${parsedMessage.userId}"]`).classList.add("voted");
         }
         answer.querySelector(".card-image").src = `/static/images/${selectedBtn.img}`;
         answer.querySelector(".trivia").innerText = getTrivia(selectedBtn);
+    }
+
+    function turnAllCards() {
+        const allVoted = Object.values(existingUsers).every(Boolean);
+        if (!allVoted) return;
+
+        setTimeout(() => document.querySelectorAll(".card").forEach(el => el.classList.toggle("is-flipped")), 100)
+
     }
 </script>
 
@@ -127,7 +164,8 @@
     :root {
         --navy: #2c3e50;
         --off-white: #e0e0d6;
-        --header-text-size: 0.6rem;
+        --header-text-size: 0.9rem;
+        --border-width: 3px;
     }
 
     body {
@@ -138,6 +176,28 @@
 
     body > * {
         color: white;
+    }
+
+    .side-header {
+        text-align: center;
+        position: absolute;
+    }
+
+    .btn {
+        flex: 1;
+        font-size: 3rem;
+        border: 1px solid black;
+        color: black;
+        cursor: pointer;
+
+        box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.25);
+        transition: transform 0.1s ease, filter 0.1s ease, outline 0.1s ease;
+        position: relative;
+        background-color: blue;
+    }
+
+    .btn:hover {
+        transform: scale(1.1);
     }
 
     .connected-user-container {
@@ -153,6 +213,9 @@
     .connected-user {
         padding: 5px;
     }
+    .connected-user.voted {
+        color: green;
+    }
 
     .answers {
         display: flex;
@@ -161,7 +224,7 @@
         column-gap: 20px;
         flex-wrap: wrap;
         width: 80%;
-        margin-top: 100px;
+        margin-top: 160px;
     }
 
     .card-container {
@@ -169,25 +232,6 @@
         height: 270px;
         perspective: 1000px;
         cursor: pointer;
-    }
-
-    .card-label {
-        color: white;
-        font-size: var(--header-text-size);
-        font-weight: bold;
-        letter-spacing: 2px;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-        text-align: center;
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 1s ease, visibility 0s linear 0s;
-    }
-
-    .card-label.card-flipped {
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 1s ease, visibility 0s linear 1s;
     }
 
     .card {
@@ -212,7 +256,7 @@
     .card-face {
         position: absolute;
         width: 100%;
-        height: 100%;
+        height: calc(100% - var(--border-width));
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         border-radius: 15px;
@@ -234,7 +278,7 @@
 
     .card-inner {
         background-color: var(--off-white);
-        height: 100%;
+        height: calc(100% - var(--border-width));
         border-radius: 15px;
         border: 2px solid var(--navy);
         display: flex;
@@ -266,7 +310,7 @@
 
     .card-footer {
         border-top: 3px double var(--navy);
-        padding: 15px;
+        padding: 5px;
         display: flex;
         align-items: flex-start;
         gap: 12px;
@@ -279,7 +323,7 @@
 
     .trivia {
         margin: 0;
-        font-size: 0.5rem;
+        font-size: 1rem;
         line-height: 1.2;
         font-weight: bold;
         color: var(--navy);

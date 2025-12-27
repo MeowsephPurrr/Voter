@@ -46,6 +46,11 @@
         renderBtns(btnContainerId, send);
 
         ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}/${Date.now()}/${name}`);
+        ws.addEventListener("message", (message) => {
+            if (message.data === "1") {
+                resetState();
+            }
+        });
     }
 
     function startRegistration() {

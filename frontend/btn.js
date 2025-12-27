@@ -73,6 +73,8 @@ const btnConf = [
     },
 ];
 
+const btnEl = [];
+
 const renderBtns = (containerId, callback) => {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -107,6 +109,7 @@ const renderBtns = (containerId, callback) => {
                 el.classList.remove('other-highlighted');
                 callback(btn.value)
             });
+            btnEl.push(el);
         });
 
         groupWrapper.appendChild(buttonGrid);
@@ -123,4 +126,11 @@ const getTrivia = (btn) => {
     const randomNumber = (Math.random() * numbersOfTrivia) << 0;
 
     return btn.trivia[randomNumber] || "";
+}
+
+const resetState = () => {
+    btnEl.forEach(el => {
+        el.classList.remove('other-highlighted');
+        el.classList.remove('active-highlight');
+    });
 }

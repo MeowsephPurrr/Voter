@@ -8,6 +8,7 @@ from backend.user import User
 class ConnectionManager:
     class TYPES(Enum):
         CONNECTION = "CONNECTION"
+        DISCONNECT = "DISCONNECT"
         USER = "USER"
         MESSAGE = "MESSAGE"
 

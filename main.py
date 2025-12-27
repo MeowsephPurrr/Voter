@@ -72,6 +72,8 @@ async def websocket_handler(websocket: WebSocket, session_id: str, id: str = Non
                 data = await websocket.receive_text()
                 await manager.broadcast(session_id, data)
     except WebSocketDisconnect:
+        if user:
+            await manager.send_to_main(user, "", manager.TYPES.DISCONNECT)
         manager.disconnect(websocket, session_id)
 
 
