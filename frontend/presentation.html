@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation</title>
+    <script src="/static/btn.js"></script>
+</head>
+<body>
+<div id="presenter">
+    <div class="next btn" onclick="send(1)"> <span class="btn-text"> NEXT </span> </div>
+    <div class="previous btn" onclick="send(1)"> <span class="btn-text"> PREV </span> </div>
+    <div class="clear btn" onclick="send(0)"> <span class="btn-text"> CLEAR </span> </div>
+</div>
+</body>
+
+<script type="application/javascript">
+    const sessionId = window.location.pathname.split('/').slice(-2).reverse().pop();
+    let ws = null;
+    let name = null;
+
+    ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}/presentation`);
+
+    function send(val) {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(val);
+            return;
+        }
+        alert("NO OPEN WEBSOCKET");
+    }
+</script>
+
+<style>
+    body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        margin: 0;
+        background-color: black;
+    }
+
+    #presenter {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 0 0;
+        grid-auto-flow: row;
+        grid-template-areas: "next" "previous" "clear";
+        height: 100vh;
+    }
+
+    .next {
+        grid-area: next;
+        background-color: green;
+    }
+
+    .previous {
+        grid-area: previous;
+        background-color: blue;
+    }
+
+    .clear {
+        grid-area: clear;
+        background-color: red;
+    }
+
+    .btn:active {
+        filter: brightness(1.1) !important;
+        transform: scale(0.95);
+    }
+
+    .btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .btn-text {
+        font-size: 20vw;
+        user-select: none;
+        caret-color: transparent;
+    }
+
+</style>

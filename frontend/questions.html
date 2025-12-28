@@ -67,7 +67,6 @@
     let cardsFlipped = false;
 
     ws.addEventListener("message", (message) => {
-        console.log(message.type)
         const parsedMessage = JSON.parse(message.data)
         switch (parsedMessage.type) {
             case "USER":
@@ -83,6 +82,9 @@
             case "DISCONNECT":
                 removeUser(parsedMessage.data)
                 break;
+            case "PRESENTATION":
+                resetQuestionState();
+                break;
         }
     });
 
@@ -96,18 +98,20 @@
 
     document.querySelectorAll(".page-change").forEach(
         el => {
-            el.addEventListener("click", () => {
-                broadcast(ws, 1);
-                answerContainer.replaceChildren();
-                for (const key of Object.keys(existingUsers)) {
-                    existingUsers[key] = null;
-                    document.querySelector(`.connected-user[data-id="${key}"]`).classList.remove("voted");
-                }
-                averageVote.classList.add("hidden");
-                cardsFlipped = false;
-            });
+            el.addEventListener("click", resetQuestionState);
         }
     );
+
+    function resetQuestionState() {
+        broadcast(ws, 1);
+        answerContainer.replaceChildren();
+        for (const key of Object.keys(existingUsers)) {
+            existingUsers[key] = null;
+            document.querySelector(`.connected-user[data-id="${key}"]`).classList.remove("voted");
+        }
+        averageVote.classList.add("hidden");
+        cardsFlipped = false;
+    }
 
     function broadcast(ws, val) {
         ws.send(val);
@@ -129,7 +133,7 @@
     }
 
     function removeUser(user) {
-        existingUsers[user.userId].remove();
+        if (existingUsers[user.userId]) existingUsers[user.userId].remove();
         delete existingUsers[user.userId];
         document.querySelector(`.connected-user[data-id="${user.userId}"]`).remove();
     }
@@ -146,7 +150,6 @@
 
             answer = fragment.firstElementChild;
             answer.querySelector(".user-name").innerText = parsedMessage.name;
-            answer.querySelector(".card").setAttribute("data-value", parsedMessage.message);
 
             answerContainer.appendChild(answer);
             answer.addEventListener("click", function () {
@@ -156,6 +159,7 @@
             existingUsers[parsedMessage.userId] = answer;
             document.querySelector(`.connected-user[data-id="${parsedMessage.userId}"]`).classList.add("voted");
         }
+        answer.querySelector(".card").setAttribute("data-value", parsedMessage.message);
         answer.querySelector(".card-image").src = `/static/images/${selectedBtn.img}`;
         answer.querySelector(".trivia").innerText = getTrivia(selectedBtn);
     }
@@ -171,7 +175,7 @@
                 el.classList.add("is-flipped");
                 addedVotedValue += parseInt(el.getAttribute("data-value"));
             });
-            averageVote.innerText = addedVotedValue;
+            averageVote.innerText = (addedVotedValue / Object.keys(existingUsers).length).toFixed(1);
             averageVote.classList.remove("hidden");
         }, 100);
     }
