@@ -21,6 +21,10 @@
     <button class="btn btn-submit" onclick="submitName()"> Submit Name</button>
 </div>
 
+<div class="extra-actions">
+    <button class="btn btn-present" onclick="present()"> PRESENT </button>
+</div>
+
 <div id="votingContainer">
 </div>
 </body>
@@ -38,10 +42,21 @@
         alert("NO OPEN WEBSOCKET");
     }
 
+    function present() {
+        window.location.href += "/presentation";
+    }
+
     function submitName() {
         const btnContainerId = "votingContainer";
         name = document.getElementById("name").value;
+
+        if (name.length < 2) {
+            alert("Name to short");
+            return;
+        }
+
         document.getElementById("nameSelectContainer").style.display = "None";
+        document.querySelector(".extra-actions").style.display = "None";
         document.getElementById(btnContainerId).style.display = "flex";
         renderBtns(btnContainerId, send);
 
@@ -83,6 +98,13 @@
         background-color: black;
     }
 
+    .extra-actions {
+        display: flex;
+        justify-content: end;
+        align-items: end;
+        height: 100%;
+    }
+
     #name {
         width: 100%;
         padding: 10px;
@@ -122,7 +144,7 @@
         cursor: pointer;
     }
 
-    .btn-submit {
+    .btn-submit, .btn-present {
         background-color: blue;
         width: 100%;
     }
