@@ -64,6 +64,7 @@
     const userTemplate = document.querySelector("#user-template");
     const connectedUserContainer = document.querySelector(".connected-user-container");
     const averageVote = document.querySelector(".average-vote");
+    let specialActions = [];
     let cardsFlipped = false;
 
     ws.addEventListener("message", (message) => {
@@ -74,6 +75,8 @@
                 break;
             case "MESSAGE":
                 renderMessages(parsedMessage.data);
+                handleSpecialAction(parsedMessage.data);
+                if (specialActions.length) return;
                 flipAllCards();
                 break;
             case "CONNECTION":
@@ -164,9 +167,23 @@
         answer.querySelector(".trivia").innerText = getTrivia(selectedBtn);
     }
 
+    function handleSpecialAction(message) {
+        const isSpecialAction = isNaN(parseInt(message.message));
+
+        if (isSpecialAction) {
+            specialActions.push(message.userId);
+            existingUsers[message.userId].querySelector(".card").classList.add("is-flipped");
+            return;
+        }
+
+        specialActions = specialActions.filter(function (item) {
+            return item !== message.userId;
+        });
+    }
+
     function flipAllCards() {
         const allVoted = Object.values(existingUsers).every(Boolean);
-        if (!allVoted) return;
+        if (!allVoted) return
 
         cardsFlipped = true;
         let addedVotedValue = 0;
