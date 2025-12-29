@@ -2,6 +2,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voting</title>
     <script src="/static/btn.js"></script>
+    <script src="/static/qr.js"></script>
+    <script src="/static/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -16,6 +18,9 @@
 
 <div class="connected-user-container">
     <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
+</div>
+
+<div class="qrcode">
 </div>
 
 <div class="average-vote hidden">
@@ -67,6 +72,8 @@
     let specialActions = [];
     let cardsFlipped = false;
 
+    createQRCode(document.querySelector(".qrcode"));
+
     ws.addEventListener("message", (message) => {
         const parsedMessage = JSON.parse(message.data)
         switch (parsedMessage.type) {
@@ -86,6 +93,10 @@
                 removeUser(parsedMessage.data)
                 break;
             case "PRESENTATION":
+                if (parsedMessage.data.message === "3") {
+                    toggleQrCode();
+                    return;
+                }
                 resetQuestionState();
                 break;
         }
@@ -114,6 +125,10 @@
         }
         averageVote.classList.add("hidden");
         cardsFlipped = false;
+    }
+
+    function toggleQrCode() {
+        document.querySelector(".qrcode").classList.toggle("hidden")
     }
 
     function broadcast(ws, val) {
@@ -236,6 +251,18 @@
 
     .btn:hover {
         transform: scale(1.1);
+    }
+
+    .qrcode {
+        position: absolute;
+        right: 150px;
+        top: 20px;
+        display: flex;
+        flex-direction: column;
+        background-color: #8888883b;
+        padding: 10px;
+        width: 200px;
+        height: 200px;
     }
 
     .connected-user-container {

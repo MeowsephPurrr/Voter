@@ -2,10 +2,8 @@
 <html>
 <head>
     <title>QR Generator</title>
-
-    <script src="qrcode.min.js"></script>
-
     <script src="/static/qrcode.min.js"></script>
+    <script src="/static/qr.js"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -28,24 +26,6 @@
 </body>
 
 <script>
-    const createQRCode = async () => {
-        async function getUrl() {
-            const res = await fetch("api/data");
-            const json = await res.json();
-
-            return json.url
-        }
-
-        const url = await getUrl();
-        const sessionId = Math.random().toString(36).substring(7);
-
-        const mobileUrl = `${url}/mobile/${sessionId}`;
-
-        document.getElementById("questionsBtn").href = `${url}/questions/${sessionId}`;
-        new QRCode(document.getElementById("qrcode"), mobileUrl);
-    }
-
-    createQRCode();
-
+    createQRCode(document.getElementById("qrcode"));
 </script>
 </html>

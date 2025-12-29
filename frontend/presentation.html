@@ -10,7 +10,16 @@
     <div class="next btn" onclick="send(1)"> <span class="btn-text"> NEXT </span> </div>
     <div class="previous btn" onclick="send(1)"> <span class="btn-text"> PREV </span> </div>
     <div class="clear btn" onclick="send(0)"> <span class="btn-text"> CLEAR </span> </div>
+    <div class="extra-actions btn" onclick="toggleExtraActions()"> <span class="btn-text"> Extra </span> </div>
 </div>
+
+<div class="hidden" id="extra-action-container">
+    <div class="qr btn extra-action-btn" onclick="toggleQrCode()"> <span class="btn-text"> QR </span> </div>
+    <div></div>
+    <div></div>
+    <div class="back btn extra-action-btn" onclick="toggleExtraActions()"> <span class="btn-text"> BACK </span> </div>
+</div>
+
 </body>
 
 <script type="application/javascript">
@@ -27,6 +36,15 @@
         }
         alert("NO OPEN WEBSOCKET");
     }
+
+    function toggleExtraActions() {
+        document.querySelector("#extra-action-container").classList.toggle("hidden");
+        document.querySelector("#presenter").classList.toggle("hidden");
+    }
+
+    function toggleQrCode() {
+        send(3);
+    }
 </script>
 
 <style>
@@ -39,14 +57,21 @@
         background-color: black;
     }
 
-    #presenter {
+    #presenter, #extra-action-container {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        grid-template-rows: auto auto auto 100px;
         gap: 0 0;
         grid-auto-flow: row;
-        grid-template-areas: "next" "previous" "clear";
         height: 100vh;
+    }
+
+    #presenter {
+        grid-template-areas: "next" "previous" "clear" "extra-actions";
+    }
+
+    .hidden {
+        display: none !important;
     }
 
     .next {
@@ -62,6 +87,15 @@
     .clear {
         grid-area: clear;
         background-color: red;
+    }
+
+    .extra-actions {
+        grid-area: extra-actions;
+        background-color: #4f2500;
+    }
+
+    #extra-action-container {
+        grid-template-areas: "qr" "" "" "back";
     }
 
     .btn:active {
@@ -82,6 +116,10 @@
         font-size: 20vw;
         user-select: none;
         caret-color: transparent;
+    }
+
+    .extra-action-btn {
+        background-color: #4f2500;
     }
 
 </style>
