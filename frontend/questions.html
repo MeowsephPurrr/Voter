@@ -20,7 +20,7 @@
     <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
 </div>
 
-<div class="qrcode">
+<div class="qrcode hidden">
 </div>
 
 <div class="average-vote hidden">
@@ -84,6 +84,9 @@
                 renderMessages(parsedMessage.data);
                 handleSpecialAction(parsedMessage.data);
                 if (specialActions.length) return;
+
+                const allVoted = Object.values(existingUsers).every(Boolean);
+                if (!allVoted) return
                 flipAllCards();
                 break;
             case "CONNECTION":
@@ -95,6 +98,10 @@
             case "PRESENTATION":
                 if (parsedMessage.data.message === "3") {
                     toggleQrCode();
+                    return;
+                }
+                if (parsedMessage.data.message === "4") {
+                    flipAllCards();
                     return;
                 }
                 resetQuestionState();
@@ -197,17 +204,19 @@
     }
 
     function flipAllCards() {
-        const allVoted = Object.values(existingUsers).every(Boolean);
-        if (!allVoted) return
-
-        cardsFlipped = true;
         let addedVotedValue = 0;
         setTimeout(() => {
-            document.querySelectorAll(".card").forEach(el => {
-                el.classList.add("is-flipped");
-                addedVotedValue += parseInt(el.getAttribute("data-value"));
+            const votedAnswers = Object.values(existingUsers).filter((answer) => !!answer);
+            if (votedAnswers.length === 0) {
+                return;
+            }
+            cardsFlipped = true;
+            votedAnswers.forEach(el => {
+                const card = el.querySelector(".card");
+                card.classList.add("is-flipped");
+                addedVotedValue += parseInt(card.getAttribute("data-value"));
             });
-            averageVote.innerText = (addedVotedValue / Object.keys(existingUsers).length).toFixed(1);
+            averageVote.innerText = (addedVotedValue / votedAnswers.length).toFixed(1);
             averageVote.classList.remove("hidden");
         }, 100);
     }
@@ -273,6 +282,7 @@
         flex-direction: column;
         background-color: #8888883b;
         padding: 10px;
+        z-index: -1;
     }
 
     .connected-user {
@@ -316,7 +326,7 @@
         column-gap: 20px;
         flex-wrap: wrap;
         width: 80%;
-        margin-top: 160px;
+        margin-top: 250px;
     }
 
     .card-container {

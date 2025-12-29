@@ -1,6 +1,6 @@
 const createQRCode = async (selector) => {
     async function getUrl() {
-        const res = await fetch("api/data");
+        const res = await fetch("/api/data");
         const json = await res.json();
 
         return json.url

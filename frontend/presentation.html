@@ -7,17 +7,17 @@
 </head>
 <body>
 <div id="presenter">
-    <div class="next btn" onclick="send(1)"> <span class="btn-text"> NEXT </span> </div>
-    <div class="previous btn" onclick="send(1)"> <span class="btn-text"> PREV </span> </div>
-    <div class="clear btn" onclick="send(0)"> <span class="btn-text"> CLEAR </span> </div>
-    <div class="extra-actions btn" onclick="toggleExtraActions()"> <span class="btn-text"> Extra </span> </div>
+    <div class="next btn" onclick="send(1)"><span class="btn-text"> NEXT </span></div>
+    <div class="previous btn" onclick="send(1)"><span class="btn-text"> PREV </span></div>
+    <div class="clear btn" onclick="send(0)"><span class="btn-text"> CLEAR </span></div>
+    <div class="extra-actions btn" onclick="toggleExtraActions()"><span class="btn-text"> EXTRA </span></div>
 </div>
 
 <div class="hidden" id="extra-action-container">
-    <div class="qr btn extra-action-btn" onclick="toggleQrCode()"> <span class="btn-text"> QR </span> </div>
-    <div></div>
-    <div></div>
-    <div class="back btn extra-action-btn" onclick="toggleExtraActions()"> <span class="btn-text"> BACK </span> </div>
+    <div class="qr btn" onclick="toggleQrCode()"><span class="btn-text"> QR </span></div>
+    <div class="flip btn" onclick="flipCards()"><span class="btn-text"> FLIP </span></div>
+    <div class="empty"><span class="btn-text"> Q </span></div>
+    <div class="back btn" onclick="toggleExtraActions()"><span class="btn-text"> BACK </span></div>
 </div>
 
 </body>
@@ -35,6 +35,10 @@
             return;
         }
         alert("NO OPEN WEBSOCKET");
+    }
+
+    function flipCards() {
+        send(4);
     }
 
     function toggleExtraActions() {
@@ -95,7 +99,7 @@
     }
 
     #extra-action-container {
-        grid-template-areas: "qr" "" "" "back";
+        grid-template-areas: "qr" "flip" "empty" "back";
     }
 
     .btn:active {
@@ -118,8 +122,17 @@
         caret-color: transparent;
     }
 
-    .extra-action-btn {
+    .back {
         background-color: #4f2500;
+
+    }
+
+    .qr {
+        background-color: #7dc2ff;
+    }
+
+    .flip {
+        background-color: #004560;
     }
 
 </style>
