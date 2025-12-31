@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote</title>
+    <script src="/static/btn.js"></script>
+</head>
+<body>
+<div id="nameSelectContainer">
+    <input
+            maxlength="20"
+            id="name"
+            type="text"
+            placeholder="Your Name"
+            inputmode="text"
+            autocapitalize="words"
+            autocorrect="off"
+            autocomplete="off"
+            spellcheck="false"
+    />
+    <button class="btn btn-submit" onclick="submitName()"> Submit Name</button>
+</div>
+
+<div id="votingContainer">
+</div>
+</body>
+
+<script type="application/javascript">
+    const sessionId = window.location.pathname.split('/').slice(-2).reverse().pop();
+    let ws = null;
+    let name = null;
+
+    function send(val) {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(val);
+            return;
+        }
+        alert("NO OPEN WEBSOCKET");
+    }
+
+    function submitName() {
+        const btnContainerId = "votingContainer";
+        name = document.getElementById("name").value;
+
+        if (name.length < 2) {
+            alert("Name to short");
+            return;
+        }
+
+        document.getElementById("nameSelectContainer").style.display = "None";
+        document.getElementById(btnContainerId).style.display = "flex";
+        renderBtns(btnContainerId, send);
+
+        ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}/${Date.now()}/${name}`);
+        ws.addEventListener("message", (message) => {
+            if (message.data === "1") {
+                resetState();
+            }
+        });
+    }
+
+    function startRegistration() {
+        const nameInput = document.getElementById("name");
+        nameInput.focus();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        startRegistration()
+    });
+    document.getElementById("name").addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            submitName();
+        }
+    });
+</script>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        margin: 0;
+        background-color: black;
+    }
+
+    #name {
+        width: 100%;
+        padding: 10px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border: 3px solid black;
+        border-radius: 8px;
+        outline: none;
+        box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.25);
+        transition: all 0.2s ease;
+    }
+
+    #name:focus {
+        transform: translate(-2px, -2px);
+        box-shadow: 2px 2px 0px 0px #007bff;
+    }
+
+    #name::placeholder {
+        color: #888;
+        font-style: italic;
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        flex: 1;
+        font-size: 3rem;
+        border: 1px solid black;
+        color: black;
+        cursor: pointer;
+
+        box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.25);
+        transition: transform 0.1s ease, filter 0.1s ease, outline 0.1s ease;
+        position: relative;
+    }
+
+    .btn:hover {
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        background-color: blue;
+        width: 100%;
+    }
+
+    #votingContainer > * {
+        color: black;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: 1fr;
+        height: 100%;
+        gap: 0;
+    }
+
+    #votingContainer {
+        display: none;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+    }
+
+    .group-wrapper[data-group="1"] {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .group-wrapper[data-group="1"] .button-grid {
+        flex: 1;
+    }
+
+    .button-grid .btn:last-child:nth-child(odd) {
+        grid-column: 1 / span 2;
+    }
+
+    .group-wrapper[data-group="2"] {
+        margin-top: auto;
+        flex: 0 0 auto;
+    }
+
+    .btn:active {
+        filter: brightness(1.1) !important;
+        transform: scale(0.99);
+    }
+
+    .btn.active-highlight {
+        outline: 5px solid white;
+        outline-offset: -5px;
+        z-index: 10;
+        filter: brightness(1.3);
+        box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .btn.other-highlighted {
+        filter: brightness(0.6);
+    }
+</style>
+
+</html>

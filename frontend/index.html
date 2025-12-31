@@ -26,6 +26,8 @@
 </body>
 
 <script>
-    createQRCode(document.getElementById("qrcode"));
+    const sessionId = (Math.random() + 1).toString(36).substring(2);
+    createQRCode(document.getElementById("qrcode"), sessionId);
+    document.querySelector("#questionsBtn").setAttribute("href", `questions/${sessionId}`);
 </script>
 </html>

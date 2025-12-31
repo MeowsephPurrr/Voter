@@ -31,7 +31,6 @@ class ConnectionManager:
             return
         self.main_sockets[session_id] = websocket
 
-
     def disconnect(self, websocket: WebSocket, session_id: str):
         user = next((u for u in self.active_connections[session_id] if u.is_user(websocket)), None)
 
@@ -44,11 +43,11 @@ class ConnectionManager:
                 await connection.websocket.send_text(message)
 
     async def send_to_main(self, message_obj: dict, session_id: str, type: TYPES = TYPES.MESSAGE):
-        try:
-            main_socket = self.main_sockets[session_id]
-            await main_socket.send_json({
-                "type": type.value,
-                "data": message_obj
-            })
-        except:
-            raise
+        if session_id not in self.main_sockets:
+            return
+
+        main_socket = self.main_sockets[session_id]
+        await main_socket.send_json({
+            "type": type.value,
+            "data": message_obj
+        })

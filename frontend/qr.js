@@ -1,4 +1,4 @@
-const createQRCode = async (selector) => {
+const createQRCode = async (selector, sessionId) => {
     async function getUrl() {
         const res = await fetch("/api/data");
         const json = await res.json();
@@ -7,7 +7,6 @@ const createQRCode = async (selector) => {
     }
 
     const url = await getUrl();
-    const sessionId = window.location.pathname.split('/').pop();
     const mobileUrl = `${url}/mobile/${sessionId}`;
 
     new QRCode(selector, mobileUrl);

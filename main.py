@@ -40,7 +40,12 @@ async def read_index():
 
 @app.get("/mobile/{session_id}/presentation")
 async def get_mobile(session_id: str):
-    return FileResponse(FRONTEND_DIR / "presentation.html")
+    return FileResponse(FRONTEND_DIR / "mobile/presentation.html")
+
+
+@app.get("/mobile/{session_id}/vote")
+async def get_mobile(session_id: str):
+    return FileResponse(FRONTEND_DIR / "mobile/vote.html")
 
 
 @app.get("/mobile/{session_id}")
@@ -63,11 +68,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, id: str, nam
     user = User(id=id, websocket=websocket, session_id=session_id, name=name)
     await websocket_handler(websocket, session_id, user=user)
 
+
 @app.get("/api/data")
 async def get_data():
     return {
         "url": "http://127.0.0.1:8000",
     }
+
 
 async def websocket_handler(
         websocket: WebSocket,
@@ -118,4 +125,3 @@ async def _user_connection(websocket: WebSocket, user: User, session_id: str):
         message_obj = user.as_dict()
         message_obj["message"] = message
         await manager.send_to_main(message_obj, session_id=session_id)
-
