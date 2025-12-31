@@ -5,3 +5,10 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    environment:
+      - TRELLO_API_KEY=${TRELLO_API_KEY}
+      - TRELLO_API_TOKEN=${TRELLO_API_TOKEN}
+      - TRELLO_BOARD_NAME=${TRELLO_BOARD_NAME}
+      - TRELLO_BOARD_ID=${TRELLO_BOARD_ID}
+      - TRELLO_LIST_NAME=${TRELLO_LIST_NAME}
+      - TRELLO_LIST_ID=${TRELLO_LIST_ID}

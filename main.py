@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
+from backend.clients import TrelloClient
 from backend.connection_manager import ConnectionManager
 from backend.user import User
 
@@ -74,6 +75,11 @@ async def get_data():
     return {
         "url": "http://127.0.0.1:8000",
     }
+
+
+@app.get("/api/tickets")
+async def get_data():
+    return TrelloClient().get_cards(fields=["id", "name", "desc"])
 
 
 async def websocket_handler(
