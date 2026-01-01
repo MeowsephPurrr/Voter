@@ -8,14 +8,16 @@
 </head>
 
 <body>
+<div class="content">
+    <div class="side-header">
+        <div class="loader"></div>
+        <div class="ticket-container"></div>
+    </div>
 
-<div class="side-header">
-    <h1> Lets vote </h1>
-    <div>
-        <button class="btn page-change">Prev</button>
-        <button class="btn page-change">Next</button>
+    <div class="answers">
     </div>
 </div>
+
 
 <div class="connected-user-container">
     <span style="font-size: 2rem; text-decoration: underline"> Connected User </span>
@@ -25,9 +27,6 @@
 </div>
 
 <div class="average-vote hidden">
-</div>
-
-<div class="answers">
 </div>
 
 <template id="answer-template">
@@ -64,65 +63,116 @@
 <script>
     const existingUsers = {};
     const sessionId = window.location.pathname.split('/').pop();
-    const ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
-    const answerContainer = document.querySelector(".answers");
-    const answerTemplate = document.querySelector("#answer-template");
-    const userTemplate = document.querySelector("#user-template");
-    const connectedUserContainer = document.querySelector(".connected-user-container");
-    const averageVote = document.querySelector(".average-vote");
     let specialActions = [];
     let cardsFlipped = false;
 
-    createQRCode(document.querySelector(".qrcode"), sessionId);
+    let ws;
+    let currentShownTicket;
+    let answerContainer;
+    let answerTemplate;
+    let userTemplate;
+    let connectedUserContainer;
+    let averageVote;
 
-    ws.addEventListener("message", (message) => {
-        const parsedMessage = JSON.parse(message.data)
-        switch (parsedMessage.type) {
-            case "USER":
-                renderUser(parsedMessage.data)
-                break;
-            case "MESSAGE":
-                renderMessages(parsedMessage.data);
-                handleSpecialAction(parsedMessage.data);
-                if (specialActions.length) return;
+    document.addEventListener("DOMContentLoaded", async () => {
+        ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
+        answerContainer = document.querySelector(".answers");
+        answerTemplate = document.querySelector("#answer-template");
+        userTemplate = document.querySelector("#user-template");
+        connectedUserContainer = document.querySelector(".connected-user-container");
+        averageVote = document.querySelector(".average-vote");
 
-                const allVoted = Object.values(existingUsers).every(Boolean);
-                if (!allVoted) return
-                flipAllCards();
-                break;
-            case "CONNECTION":
-                addUser(parsedMessage.data)
-                break;
-            case "DISCONNECT":
-                removeUser(parsedMessage.data)
-                break;
-            case "PRESENTATION":
-                if (parsedMessage.data.message === "3") {
-                    toggleQrCode();
-                    return;
-                }
-                if (parsedMessage.data.message === "4") {
+        ws.addEventListener("message", (message) => {
+            const parsedMessage = JSON.parse(message.data)
+            switch (parsedMessage.type) {
+                case "USER":
+                    renderUser(parsedMessage.data)
+                    break;
+                case "MESSAGE":
+                    renderMessages(parsedMessage.data);
+                    handleSpecialAction(parsedMessage.data);
+                    if (specialActions.length) return;
+
+                    const allVoted = Object.values(existingUsers).every(Boolean);
+                    if (!allVoted) return
                     flipAllCards();
-                    return;
-                }
-                resetCardState();
-                break;
+                    break;
+                case "CONNECTION":
+                    addUser(parsedMessage.data)
+                    break;
+                case "DISCONNECT":
+                    removeUser(parsedMessage.data)
+                    break;
+                case "PRESENTATION":
+                    if (parsedMessage.data.message === "1") {
+                        showPreviousTicket();
+                    }
+                    if (parsedMessage.data.message === "2") {
+                        showNextTicket();
+                    }
+                    if (parsedMessage.data.message === "3") {
+                        toggleQrCode();
+                        return;
+                    }
+                    if (parsedMessage.data.message === "4") {
+                        flipAllCards();
+                        return;
+                    }
+                    if (parsedMessage.data.message === "5") {
+                        toggleTicketVisibility();
+                        return;
+                    }
+                    resetCardState();
+                    break;
+            }
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            broadcast(ws, 0);
+        } else {
+            ws.addEventListener("open", () => {
+                broadcast(ws, 0);
+            });
         }
+
+        await renderTickets();
+        setCurrentShowTicket();
+        hideLoader();
+        await createQRCode(document.querySelector(".qrcode"), sessionId);
+
+        document.querySelectorAll(".page-change").forEach(
+            el => {
+                el.addEventListener("click", resetCardState);
+            }
+        );
     });
 
-    if (ws.readyState === WebSocket.OPEN) {
-        broadcast(ws, 0);
-    } else {
-        ws.addEventListener("open", () => {
-            broadcast(ws, 0);
-        });
+    function showNextTicket() {
+        setCurrentShowTicket(currentShownTicket.nextElementSibling);
     }
 
-    document.querySelectorAll(".page-change").forEach(
-        el => {
-            el.addEventListener("click", resetCardState);
+    function showPreviousTicket() {
+        setCurrentShowTicket(currentShownTicket.previousElementSibling ?? document.querySelector(".ticket-container").lastElementChild);
+    }
+
+    function hideLoader() {
+        document.querySelector(".loader").classList.add("hidden");
+    }
+
+    function setCurrentShowTicket(ticket) {
+        if (currentShownTicket) {
+            currentShownTicket.classList.add("hidden");
         }
-    );
+
+        if (!ticket) {
+            ticket = document.querySelector(".ticket-container").firstElementChild;
+        }
+        currentShownTicket = ticket;
+        currentShownTicket.classList.remove("hidden");
+    }
+
+    function toggleTicketVisibility() {
+        currentShownTicket.classList.toggle("hidden");
+    }
 
     function resetCardState() {
         broadcast(ws, 1);
@@ -234,12 +284,14 @@
         --off-white: #e0e0d6;
         --header-text-size: 0.9rem;
         --border-width: 3px;
+        --background: #8888883b;
     }
 
     body {
         background-color: black;
         display: flex;
         justify-content: center;
+        flex-direction: column;
     }
 
     body > * {
@@ -247,12 +299,14 @@
     }
 
     .side-header {
+        display: flex;
+        justify-content: center;
         text-align: center;
-        position: absolute;
     }
 
-    .side-header, .answers {
-        padding-left: 50px
+    .content {
+        padding-left: 250px;
+        max-width: calc(100% - 500px);
     }
 
     .btn {
@@ -274,11 +328,11 @@
 
     .qrcode {
         position: absolute;
-        right: 150px;
-        top: 20px;
+        right: 10px;
+        top: 150px;
         display: flex;
         flex-direction: column;
-        background-color: #8888883b;
+        background-color: var(--background);
         padding: 10px;
         width: 200px;
         height: 200px;
@@ -290,7 +344,7 @@
         top: 20px;
         display: flex;
         flex-direction: column;
-        background-color: #8888883b;
+        background-color: var(--background);
         padding: 10px;
         z-index: -1;
     }
@@ -308,7 +362,7 @@
         display: flex;
         opacity: 1;
         position: absolute;
-        right: 20px;
+        right: 70px;
         top: 20px;
         width: 100px;
         height: 100px;
@@ -336,8 +390,6 @@
         row-gap: 40px;
         column-gap: 20px;
         flex-wrap: wrap;
-        width: 80%;
-        margin-top: 250px;
     }
 
     .card-container {
@@ -440,6 +492,44 @@
         line-height: 1.2;
         font-weight: bold;
         color: var(--navy);
+    }
+
+    .loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .ticket {
+        padding: 10px;
+        font-size: 1.5rem;
+    }
+
+    .ticket-title {
+        color: black;
+        background-color: lightcoral;
+        padding: 5px 0 5px 0;
+        border: solid 1px black;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .ticket-description {
+        color: black;
+        background-color: lightgreen;
+        padding: 5px;
+        border: solid 1px black;
     }
 
 </style>

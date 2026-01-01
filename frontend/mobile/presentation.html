@@ -7,7 +7,7 @@
 </head>
 <body>
 <div id="presenter">
-    <div class="next btn" onclick="send(1)"><span class="btn-text"> NEXT </span></div>
+    <div class="next btn" onclick="send(2)"><span class="btn-text"> NEXT </span></div>
     <div class="previous btn" onclick="send(1)"><span class="btn-text"> PREV </span></div>
     <div class="clear btn" onclick="send(0)"><span class="btn-text"> CLEAR </span></div>
     <div class="extra-actions btn" onclick="toggleExtraActions()"><span class="btn-text"> ACTION </span></div>
@@ -16,7 +16,7 @@
 <div class="hidden" id="extra-action-container">
     <div class="qr btn" onclick="toggleQrCode()"><span class="btn-text"> QR </span></div>
     <div class="flip btn" onclick="flipCards()"><span class="btn-text"> FLIP </span></div>
-    <div class="empty"><span class="btn-text"> Q </span></div>
+    <div class="ticket-toggle btn" onclick="toggleTicket()"><span class="btn-text"> TICKET </span></div>
     <div class="back btn" onclick="toggleExtraActions()"><span class="btn-text"> BACK </span></div>
 </div>
 
@@ -48,6 +48,10 @@
 
     function toggleQrCode() {
         send(3);
+    }
+
+    function toggleTicket() {
+        send(5);
     }
 </script>
 
@@ -133,6 +137,10 @@
 
     .flip {
         background-color: #004560;
+    }
+
+    .ticket-toggle {
+        background-color: #002331;
     }
 
 </style>

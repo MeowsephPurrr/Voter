@@ -1,3 +1,5 @@
+import os
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -73,7 +75,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, id: str, nam
 @app.get("/api/data")
 async def get_data():
     return {
-        "url": "http://127.0.0.1:8000",
+        "url": os.environ.get("url", "http://127.0.0.1:8000"),
     }
 
 
