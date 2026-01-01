@@ -34,9 +34,9 @@ async def read_index():
     return FileResponse(FRONTEND_DIR / "index.html")
 
 
-@app.get("/questions/{session_id}")
+@app.get("/ticket-vote/{session_id}")
 async def read_index():
-    return FileResponse(FRONTEND_DIR / "questions.html")
+    return FileResponse(FRONTEND_DIR / "ticket_vote.html")
 
 
 @app.get("/mobile/{session_id}/presentation")

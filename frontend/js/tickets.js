@@ -5,3 +5,5 @@ async function getTickets() {
     console.log(json)
     return json
 }
+
+getTickets();

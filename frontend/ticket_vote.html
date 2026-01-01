@@ -105,7 +105,7 @@
                     flipAllCards();
                     return;
                 }
-                resetQuestionState();
+                resetCardState();
                 break;
         }
     });
@@ -120,11 +120,11 @@
 
     document.querySelectorAll(".page-change").forEach(
         el => {
-            el.addEventListener("click", resetQuestionState);
+            el.addEventListener("click", resetCardState);
         }
     );
 
-    function resetQuestionState() {
+    function resetCardState() {
         broadcast(ws, 1);
         answerContainer.replaceChildren();
         for (const key of Object.keys(existingUsers)) {

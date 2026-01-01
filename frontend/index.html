@@ -19,15 +19,14 @@
     </style>
 </head>
 <body>
-<h1 id="question"></h1>
 <div id="qrcode"></div>
 
-<a id="questionsBtn" href=""> Go To Questions </a>
+<a id="ticketVoteBtn" href=""> Go To Tickets </a>
 </body>
 
 <script>
     const sessionId = (Math.random() + 1).toString(36).substring(2);
     createQRCode(document.getElementById("qrcode"), sessionId);
-    document.querySelector("#questionsBtn").setAttribute("href", `questions/${sessionId}`);
+    document.querySelector("#ticketVoteBtn").setAttribute("href", `ticket-vote/${sessionId}`);
 </script>
 </html>
