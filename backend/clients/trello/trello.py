@@ -3,6 +3,7 @@ import os
 import requests
 
 from backend.clients.abstract import Client
+from backend.data.ticket import Ticket
 
 
 class TrelloClient(Client):
@@ -53,11 +54,15 @@ class TrelloClient(Client):
             list_id = [list["id"] for list in self.get_lists() if list["name"] == list_name][0]
 
         if not fields:
-            fields = []
-
-
+            fields = ["id", "name", "desc"]
 
         url = f"https://api.trello.com/1/lists/{list_id}/cards"
 
         cards = self.request(url, query={"fields": ",".join(fields)})
         return cards
+
+    def get_tickets(self) -> list[Ticket]:
+        cards = self.get_cards()
+
+        tickets = [Ticket(card["id"], card["name"], card["desc"]) for card in cards]
+        return tickets

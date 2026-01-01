@@ -79,7 +79,7 @@ async def get_data():
 
 @app.get("/api/tickets")
 async def get_data():
-    return TrelloClient().get_cards(fields=["id", "name", "desc"])
+    return TrelloClient().get_tickets()
 
 
 async def websocket_handler(
